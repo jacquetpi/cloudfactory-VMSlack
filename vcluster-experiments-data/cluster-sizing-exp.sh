@@ -9,11 +9,6 @@ dataset="$1"
 output_csv="vcluster-experiments-data/output-"$dataset".csv"
 echo "dataset,distribution,vm,label,host,hostoc1,hostoc2,hostoc3" > "$output_csv"
 
-
-
-
-
-
 for oc1 in $(seq 0 25 100)
 do
     to_dispath=$((100 - $oc1))
@@ -30,27 +25,37 @@ do
         prev_oc1=0
         prev_oc2=0
         prev_oc3=0
-        for vm in $(seq 100 100 1000)
+
+        # Initialise CloudFactory scenario
+        startvm=100
+        step=100
+        extended_label="$dataset-$distribution-$startvm.vm"
+        python3 -m generator --distribution=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-distribution-"$dataset".yml --usage=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-usage-azure2017.yml --premium=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-premium.yml --vm="$startvm" --output=cloudsimplus --temporality=360,8640,7 --export="/usr/local/src/cloudfactory-premium/vcluster-experiments-data/cloudfactory-dump/$extended_label.json"
+        
+        for vm in $(seq $startvm $step 1000)
         do
             echo "Testing following oversubscription distribution oc1:$oc1% oc2:$oc2% oc3:$oc3% with $vm vm"
-            
-            # Cloudfactory generation
             extended_label="$dataset-$distribution-$vm.vm"
-            python3 -m generator --distribution=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-distribution-"$dataset".yml --usage=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-usage-azure2017.yml --premium=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-premium.yml --vm="$vm" --output=cloudsimplus --temporality=360,8640,7 --export="/usr/local/src/cloudfactory-premium/vcluster-experiments-data/cloudfactory-dump/$extended_label.json"
-            
-            echo "source vcluster-experiments-data/deduct-min.sh $extended_label-vcluster $vm $prev_vcluster no"
 
-            vcluster-experiments-data/deduct-min.sh "$extended_label-vcluster" "$vm" "$prev_vcluster" no > /tmp/res-vcluster &
-            vcluster-experiments-data/deduct-min.sh "$extended_label-oc1" "$vm" "$prev_oc1" 1.0 > /tmp/res-oc1 &
-            vcluster-experiments-data/deduct-min.sh "$extended_label-oc2" "$vm" "$prev_oc2" 2.0 > /tmp/res-oc2 &
-            vcluster-experiments-data/deduct-min.sh "$extended_label-oc3" "$vm" "$prev_oc3" 3.0 > /tmp/res-oc3 &
+            # Launch experiments
+            mv vms.properties /tmp/vms.properties 
+            mv models.properties /tmp/models.properties
+
+            vcluster-experiments-data/deduct-min.sh "$extended_label-vcluster" "$vm" "$prev_vcluster" no /tmp/vms.properties /tmp/models.properties > /tmp/res-vcluster &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc1" "$vm" "$prev_oc1" 1.0 /tmp/vms.properties /tmp/models.properties > /tmp/res-oc1 &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc2" "$vm" "$prev_oc2" 2.0 /tmp/vms.properties /tmp/models.properties > /tmp/res-oc2 &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc3" "$vm" "$prev_oc3" 3.0 /tmp/vms.properties /tmp/models.properties > /tmp/res-oc3 &
+            # Preparing next round in background to reduce time
+            nextvm=$(($vm + $step))
+            nextlabel="$dataset-$distribution-$nextvm.vm"
+            python3 -m generator --distribution=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-distribution-"$dataset".yml --usage=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-usage-azure2017.yml --premium=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-premium.yml --vm="$nextvm" --output=cloudsimplus --temporality=360,8640,7 --export="/usr/local/src/cloudfactory-premium/vcluster-experiments-data/cloudfactory-dump/$nextlabel.json" &
             
             wait 
             vcluster=$(cat /tmp/res-vcluster)
             clusteroc1=$(cat /tmp/res-oc1)
             clusteroc2=$(cat /tmp/res-oc2)
             clusteroc3=$(cat /tmp/res-oc3)
-            cluster=$(python3 -c "print($clusteroc1 + $clusteroc2 + $clusteroc3)")
+            cluster=$(($clusteroc1 + $clusteroc2 + $clusteroc3))
 
             echo "overall: found min with $vcluster against $cluster"
             echo "$dataset,$distribution,$vm,vcluster,$vcluster,$clusteroc1,$clusteroc2,$clusteroc3" >> "$output_csv"
