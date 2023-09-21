@@ -9,6 +9,11 @@ dataset="$1"
 output_csv="vcluster-experiments-data/output-"$dataset".csv"
 echo "dataset,distribution,vm,label,host,hostoc1,hostoc2,hostoc3" > "$output_csv"
 
+
+
+
+
+
 for oc1 in $(seq 0 25 100)
 do
     to_dispath=$((100 - $oc1))
@@ -34,11 +39,19 @@ do
             python3 -m generator --distribution=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-distribution-"$dataset".yml --usage=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-usage-azure2017.yml --premium=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-premium.yml --vm="$vm" --output=cloudsimplus --temporality=360,8640,7 --export="/usr/local/src/cloudfactory-premium/vcluster-experiments-data/cloudfactory-dump/$extended_label.json"
             
             echo "source vcluster-experiments-data/deduct-min.sh $extended_label-vcluster $vm $prev_vcluster no"
-            vcluster=$( source vcluster-experiments-data/deduct-min.sh "$extended_label-vcluster" "$vm" "$prev_vcluster" no)
-            clusteroc1=$( source vcluster-experiments-data/deduct-min.sh "$extended_label-oc1" "$vm" "$prev_oc1" 1.0)
-            clusteroc2=$( source vcluster-experiments-data/deduct-min.sh "$extended_label-oc2" "$vm" "$prev_oc2" 2.0)
-            clusteroc3=$( source vcluster-experiments-data/deduct-min.sh "$extended_label-oc3" "$vm" "$prev_oc3" 3.0)
+
+            vcluster-experiments-data/deduct-min.sh "$extended_label-vcluster" "$vm" "$prev_vcluster" no > /tmp/res-vcluster &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc1" "$vm" "$prev_oc1" 1.0 > /tmp/res-oc1 &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc2" "$vm" "$prev_oc2" 2.0 > /tmp/res-oc2 &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc3" "$vm" "$prev_oc3" 3.0 > /tmp/res-oc3 &
+            
+            wait 
+            vcluster=$(cat /tmp/res-vcluster)
+            clusteroc1=$(cat /tmp/res-oc1)
+            clusteroc2=$(cat /tmp/res-oc2)
+            clusteroc3=$(cat /tmp/res-oc3)
             cluster=$(python3 -c "print($clusteroc1 + $clusteroc2 + $clusteroc3)")
+
             echo "overall: found min with $vcluster against $cluster"
             echo "$dataset,$distribution,$vm,vcluster,$vcluster,$clusteroc1,$clusteroc2,$clusteroc3" >> "$output_csv"
             echo "$dataset,$distribution,$vm,cluster,$cluster,None,None,None" >> "$output_csv"
