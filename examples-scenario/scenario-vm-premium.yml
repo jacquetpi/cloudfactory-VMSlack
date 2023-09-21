@@ -1,4 +1,4 @@
 vm_premium: #Premium profiles
-    oc-1.0: 0.0
-    oc-2.0: 0.0
-    oc-3.0: 1.0
+    oc-1.0: 0.5
+    oc-2.0: 0.25
+    oc-3.0: 0.25
