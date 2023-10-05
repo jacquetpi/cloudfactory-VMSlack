@@ -32,7 +32,7 @@ do
         extended_label="$dataset-$distribution-$startvm.vm"
         python3 -m generator --distribution=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-distribution-"$dataset".yml --usage=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-usage-azure2017.yml --premium=/usr/local/src/cloudfactory-premium/examples-scenario/scenario-vm-premium.yml --vm="$startvm" --output=cloudsimplus --temporality=360,8640,7 --export="/usr/local/src/cloudfactory-premium/vcluster-experiments-data/cloudfactory-dump/$extended_label.json"
 
-        for vm in $(seq $startvm $step 1000)
+        for vm in $(seq $startvm $step 500)
         do
             echo "Testing following oversubscription distribution oc1:$oc1% oc2:$oc2% oc3:$oc3% with $vm vm"
             extended_label="$dataset-$distribution-$vm.vm"

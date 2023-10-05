@@ -9,10 +9,15 @@
 /*.cbtool
 /*.txt
 /*.csv
+wip.sh
 vm-static-load/
 results/
 results-latency/
 generated-experiment/
+vcluster-experiments-data/cloudsimplus-dump
+vcluster-experiments-data/cloudfactory-dump
+vcluster-experiments-data/results
+vcluster-experiments-data/output*.csv
 
 # due to size constraints:
 examples-data/dynamic-azure/cloudsimplus-logs.tar.gz
