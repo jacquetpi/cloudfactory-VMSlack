@@ -9,7 +9,7 @@ dataset="$1"
 output_csv="vcluster-experiments-data/output-"$dataset".csv"
 echo "dataset,distribution,vm,label,host,hostoc1,hostoc2,hostoc3" > "$output_csv"
 
-for oc1 in $(seq 0 25 100)
+for oc1 in $(seq 50 25 100)
 do
     to_dispath=$((100 - $oc1))
     for oc2 in $(seq 0 25 $to_dispath)
@@ -41,10 +41,13 @@ do
             mv vms.properties /tmp/vms.properties
             mv models.properties /tmp/models.properties
 
-            vcluster-experiments-data/deduct-min.sh "$extended_label-vcluster" "$vm" "$prev_vcluster" no /tmp/vms.properties /tmp/models.properties > /tmp/res-vcluster &
-            vcluster-experiments-data/deduct-min.sh "$extended_label-oc1" "$vm" "$prev_oc1" 1.0 /tmp/vms.properties /tmp/models.properties > /tmp/res-oc1 &
-            vcluster-experiments-data/deduct-min.sh "$extended_label-oc2" "$vm" "$prev_oc2" 2.0 /tmp/vms.properties /tmp/models.properties > /tmp/res-oc2 &
-            vcluster-experiments-data/deduct-min.sh "$extended_label-oc3" "$vm" "$prev_oc3" 3.0 /tmp/vms.properties /tmp/models.properties > /tmp/res-oc3 &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-vcluster" "$vm" "$prev_vcluster" no /tmp/vms.properties /tmp/models.properties false> /tmp/res-vcluster &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc1" "$vm" "$prev_oc1" 1.0 /tmp/vms.properties /tmp/models.properties false> /tmp/res-oc1 &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc2" "$vm" "$prev_oc2" 2.0 /tmp/vms.properties /tmp/models.properties false> /tmp/res-oc2 &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc3" "$vm" "$prev_oc3" 3.0 /tmp/vms.properties /tmp/models.properties false> /tmp/res-oc3 &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc1" "$vm" "$prev_oc1" 1.0 /tmp/vms.properties /tmp/models.properties true> /tmp/ff-oc1 &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc2" "$vm" "$prev_oc2" 2.0 /tmp/vms.properties /tmp/models.properties true> /tmp/ff-oc2 &
+            vcluster-experiments-data/deduct-min.sh "$extended_label-oc3" "$vm" "$prev_oc3" 3.0 /tmp/vms.properties /tmp/models.properties true> /tmp/ff-oc3 &
             # Preparing next round in background to reduce time
             nextvm=$(($vm + $step))
             nextlabel="$dataset-$distribution-$nextvm.vm"
@@ -55,11 +58,17 @@ do
             clusteroc1=$(cat /tmp/res-oc1)
             clusteroc2=$(cat /tmp/res-oc2)
             clusteroc3=$(cat /tmp/res-oc3)
+            ffoc1=$(cat /tmp/ff-oc1)
+            ffoc2=$(cat /tmp/ff-oc2)
+            ffoc3=$(cat /tmp/ff-oc3)
+            
             cluster=$(($clusteroc1 + $clusteroc2 + $clusteroc3))
+            ff=$(($ffoc1 + $ffoc2 + $ffoc3))
 
             echo "overall: found min with $vcluster against $cluster"
             echo "$dataset,$distribution,$vm,vcluster,$vcluster,None,None,None" >> "$output_csv"
             echo "$dataset,$distribution,$vm,cluster,$cluster,$clusteroc1,$clusteroc2,$clusteroc3" >> "$output_csv"
+            echo "$dataset,$distribution,$vm,ff,$ff,$ffoc1,$ffoc2,$ffoc3" >> "$output_csv"
             prev_vcluster="$vcluster"
             prev_oc1="$clusteroc1"
             prev_oc2="$clusteroc2"

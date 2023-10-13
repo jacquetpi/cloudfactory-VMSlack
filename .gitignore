@@ -12,6 +12,8 @@
 wip.sh
 vm-static-load/
 results/
+figures/
+results-treated/
 results-latency/
 generated-experiment/
 vcluster-experiments-data/cloudsimplus-dump
