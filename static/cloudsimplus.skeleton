@@ -23,7 +23,8 @@
  */
 package org.cloudsimplus.examples;
 
-import org.cloudsimplus.allocationpolicies.VmAllocationPolicyFirstFit;
+import org.cloudsimplus.allocationpolicies.VmAllocationPolicy;
+import org.cloudsimplus.allocationpolicies.VmAllocationPolicyvCluster;
 import org.cloudsimplus.brokers.DatacenterBroker;
 import org.cloudsimplus.brokers.DatacenterBrokerSimple;
 import org.cloudsimplus.builders.tables.CloudletsTableBuilder;
@@ -123,6 +124,10 @@ public class CloudFactoryGeneratedWorkload {
 
     private static double currentTime;
 
+    private static String modelVmFile = "vms.properties";
+    private static String modelUsageFile = "models.properties";
+    private static Boolean firstFit = false;
+
     /**
      * Starts the example execution, calling the class constructor\
      * to build and run the simulation.
@@ -135,11 +140,16 @@ public class CloudFactoryGeneratedWorkload {
                 HOSTS = Integer.parseInt(args[0]);
                 HOST_PES_NUMBER = Integer.parseInt(args[1]);
                 HOST_MEMORY = Integer.parseInt(args[2])*1024;
-                if (args.length >= 4)
+                if (args.length >= 4 && !args[3].equals("no"))
                     filtered_oversubscription = Float.parseFloat(args[3]);
+                if (args.length >= 5)
+                    modelVmFile =  args[4];
+                if (args.length >= 6)
+                    modelUsageFile = args[5];
+                if (args.length >= 7)
+                    firstFit = Boolean.parseBoolean(args[6]);
             } catch (NumberFormatException e) {
-                System.err.println("Usage : host_number cpu_number mem_gb");
-                System.err.println("Arguments must be integers.");
+                System.err.println("Usage : host_number cpu_number mem_gb [filtered_oversubscription] [vmfile] [modelfile] [firstFit True/false]");
                 System.exit(1);
             }
         }
@@ -162,9 +172,9 @@ public class CloudFactoryGeneratedWorkload {
         currentTime = 0;
         simulation.addOnClockTickListener(this::onClockTickListener);
 
-		vmTemplateList = loadCloudFactoryVMs("vms.properties");
-		usageModels = loadCloudFactoryModels("models.properties");
-
+		vmTemplateList = loadCloudFactoryVMs(modelVmFile);
+		usageModels = loadCloudFactoryModels(modelUsageFile);
+        
         this.hostList = new ArrayList<>();
         this.vmList = new ArrayList<>();
         this.cloudletList = new ArrayList<>();
@@ -202,7 +212,8 @@ public class CloudFactoryGeneratedWorkload {
         for (int i = 0; i < HOSTS; i++) {
             hostList.add(createHost());
         }
-        final var dc = new DatacenterSimple(simulation, hostList, new VmAllocationPolicyFirstFit());
+        VmAllocationPolicy allocationPolicy;
+        final var dc = new DatacenterSimple(simulation, hostList, new VmAllocationPolicyvCluster(firstFit=firstFit));
         dc.setSchedulingInterval(SCHEDULING_INTERVAL);
         return dc;
     }
@@ -377,8 +388,14 @@ public class CloudFactoryGeneratedWorkload {
             if(filtered_oversubscription != null && !oversubscriptionLevel.equals(filtered_oversubscription)){
                 continue;
             }
+
 			VmOversubscribable vm = new VmOversubscribable(Integer.parseInt(template.get("vmid")), Integer.parseInt(template.get("vmmips")), Integer.parseInt(template.get("vmcpu")), oversubscriptionLevel);
-			vm.setRam(Integer.parseInt(template.get("vmram"))).setBw(Integer.parseInt(template.get("vmbw"))).setSize(Integer.parseInt(template.get("vmsize"))).setCloudletScheduler(new CloudletSchedulerTimeShared());
+            int ramVal = Integer.parseInt(template.get("vmram"));
+            if(oversubscriptionLevel > 1 && ramVal>=8129){
+                ramVal=8192;
+            }
+			vm.setRam(ramVal);
+            vm.setBw(Integer.parseInt(template.get("vmbw"))).setSize(Integer.parseInt(template.get("vmsize"))).setCloudletScheduler(new CloudletSchedulerTimeShared());
 			vm.setSubmissionDelay(Integer.parseInt(template.get("vmsubmission")));
             vm.setShutDownDelay(5.0);
             vm.setLifeTime(Integer.parseInt(template.get("cloudletlifetime")));

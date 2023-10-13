@@ -9,7 +9,7 @@ dataset="$1"
 output_csv="vcluster-experiments-data/output-"$dataset".csv"
 echo "dataset,distribution,vm,label,host,hostoc1,hostoc2,hostoc3" > "$output_csv"
 
-for oc1 in $(seq 50 25 100)
+for oc1 in $(seq 25 25 100)
 do
     to_dispath=$((100 - $oc1))
     for oc2 in $(seq 0 25 $to_dispath)
