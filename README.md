@@ -19,7 +19,7 @@ If one wants to deduct the minimal number of servers needed for the workload, th
 label="test"
 vm_count=100
 host_count=1
-./deduct-min.sh $label $vm_count $host_count no vmproperties modelproperties false
+./deduct-min.sh $label $vm_count $host_count no vms.properties models.properties false
 ```
 
 Generate workload for our VMSlack prototype (must be running before executing setup and workload scripts):
