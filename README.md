@@ -6,7 +6,7 @@ Specifically, we introduce the ```examples-scenario/scenario-vm-premium.yml``` f
 
 Generate workload for our VMSlack simulation (CloudSimPlus based):
 ```bash
-python3 -m generator --distribution=examples-scenario/scenario-vm-distribution-ovhcloud2023.yml --usage=examples-scenario/scenario-vm-usage-azure2017.yml --premium=examples-scenario/scenario-vm-premium.yml --vm=100--temporality=360,8640,7  --output=cloudsimplus 
+python3 -m generator --distribution=examples-scenario/scenario-vm-distribution-ovhcloud2023.yml --usage=examples-scenario/scenario-vm-usage-azure2017.yml --premium=examples-scenario/scenario-vm-premium.yml --vm=100--temporality=360,8640,7 --output=cloudsimplus 
 cloudsimplus_repo='/usr/local/src/cloudsimplus/'
 host_count=10
 host_cpu=32
@@ -14,7 +14,7 @@ host_gb=128
 java -cp $cloudsimplus_repo/target/cloudsimplus-*-with-dependencies.jar org.cloudsimplus.examples.CloudFactoryGeneratedWorkload $host_count $host_cpu $host_gb no vms.properties models.properties false
 ```
 
-If one want to deduct the minimal number of server needed for the workload, this is done through this script that will sequentially launch simulation starting at ```$host_count```:
+If one wants to deduct the minimal number of servers needed for the workload, this is done through this script that will sequentially launch simulation starting at ```$host_count```:
 ```bash
 label="test"
 vm_count=100
@@ -22,7 +22,7 @@ host_count=1
 ./deduct-min.sh $label $vm_count $host_count no vmproperties modelproperties false
 ```
 
-Generate workload for our VMSlack prototype:
+Generate workload for our VMSlack prototype (must be running before executing setup and workload scripts):
 ```bash
 python3 -m generator --distribution=examples-scenario/scenario-vm-distribution-ovhcloud2023.yml --usage=examples-scenario/scenario-vm-usage-azure2017.yml --premium=examples-scenario/scenario-vm-premium.yml --vm=100 --temporality=400,3600,10 --output=bash
 ./setup.sh
