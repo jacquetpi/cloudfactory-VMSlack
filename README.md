@@ -4,6 +4,8 @@ This is a modified version of CloudFactory implementing oversubscription levels 
 It was used to evaluate SlackVM  
 Specifically, we introduce the ```examples-scenario/scenario-vm-premium.yml``` file where distribution of oversubscription levels is specified
 
+## Simulation experiments
+
 Generate workload for our VMSlack simulation (CloudSimPlus based):
 ```bash
 python3 -m generator --distribution=examples-scenario/scenario-vm-distribution-ovhcloud2023.yml --usage=examples-scenario/scenario-vm-usage-azure2017.yml --premium=examples-scenario/scenario-vm-premium.yml --vm=100--temporality=360,8640,7 --output=cloudsimplus 
@@ -34,6 +36,8 @@ distribution="ovhcloud2023"
 vcluster-experiments-data/cluster-sizing-exp.sh $distribution
 ```
 > This is a time consuming step. Count for at least 12h
+
+## Physical experiments
 
 Generate workload for our VMSlack prototype (must be running before executing setup and workload scripts):
 ```bash
