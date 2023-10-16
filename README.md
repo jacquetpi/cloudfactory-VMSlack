@@ -19,8 +19,21 @@ If one wants to deduct the minimal number of servers needed for the workload, th
 label="test"
 vm_count=100
 host_count=1
-./deduct-min.sh $label $vm_count $host_count no vms.properties models.properties false
+vcluster-experiments-data/deduct-min.sh $label $vm_count $host_count no vms.properties models.properties false
 ```
+
+For comparison purposes, if you want to compute the number of server needed to host VMs from a specific oversubscription level (in a classic setting where an oversubscription level is hosted in a single cluster):
+```bash
+filer_oc=1.0
+vcluster-experiments-data/deduct-min.sh $label $vm_count $host_count $filer_oc vms.properties models.properties false
+```
+
+Finally, if you want to compute, the number of servers required for all oversubscriptions levels distribution on both classic clusters and a SlackVM cluster: 
+```bash
+distribution="ovhcloud2023"
+vcluster-experiments-data/cluster-sizing-exp.sh $distribution
+```
+> This is a time consuming step. Count for at least 12h
 
 Generate workload for our VMSlack prototype (must be running before executing setup and workload scripts):
 ```bash
