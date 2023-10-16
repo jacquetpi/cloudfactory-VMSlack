@@ -1,10 +1,35 @@
-# This is a fork of CloudFactory! For the main version, click [here](https://github.com/jacquetpi/cloudfactory)
-## Desc: CloudFactory fork adding premium level to VMs
+# Presentation
 
+This is a modified version of CloudFactory implementing oversubscription levels consideration.  
+It was used to evaluate SlackVM  
+Specifically, we introduce the ```examples-scenario/scenario-vm-premium.yml``` file where distribution of oversubscription levels is specified
+
+Generate workload for our VMSlack simulation (CloudSimPlus based):
 ```bash
-python3 -m generator --usage=examples-scenario/scenario-vm-usage-azure2017.yml --vm=100 -t400,3600,10 --output=bash --export=vm_list.json
-python3 -m generator --usage=examples-scenario/scenario-vm-usage-azure2017-inc.yml --vm=100 -t400,3600,10 --output=bash --export=vm_list.json
+python3 -m generator --distribution=examples-scenario/scenario-vm-distribution-ovhcloud2023.yml --usage=examples-scenario/scenario-vm-usage-azure2017.yml --premium=examples-scenario/scenario-vm-premium.yml --vm=100--temporality=360,8640,7  --output=cloudsimplus 
+cloudsimplus_repo='/usr/local/src/cloudsimplus/'
+host_count=10
+host_cpu=32
+host_gb=128
+java -cp $cloudsimplus_repo/target/cloudsimplus-*-with-dependencies.jar org.cloudsimplus.examples.CloudFactoryGeneratedWorkload $host_count $host_cpu $host_gb no vms.properties models.properties false
 ```
+
+If one want to deduct the minimal number of server needed for the workload, this is done through this script that will sequentially launch simulation starting at ```$host_count```:
+```bash
+label="test"
+vm_count=100
+host_count=1
+./deduct-min.sh $label $vm_count $host_count no vmproperties modelproperties false
+```
+
+Generate workload for our VMSlack prototype:
+```bash
+python3 -m generator --distribution=examples-scenario/scenario-vm-distribution-ovhcloud2023.yml --usage=examples-scenario/scenario-vm-usage-azure2017.yml --premium=examples-scenario/scenario-vm-premium.yml --vm=100 --temporality=400,3600,10 --output=bash
+./setup.sh
+./workload-local.sh
+```
+
+# Below : Initial CloudFactory README file
 
 
 CloudFactory is a IaaS workload generator. Its goals is to generate representative workloads for simulators (such as CloudSimPlus) or for physical platforms (using bash scripts or CBTOOL)
