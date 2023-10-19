@@ -1,7 +1,7 @@
 # Presentation
 
 This is a modified version of CloudFactory implementing oversubscription levels consideration.  
-It was used to evaluate SlackVM  
+It was used to evaluate SlackVM.  
 Specifically, we introduce the ```examples-scenario/scenario-vm-premium.yml``` file where distribution of oversubscription levels is specified
 
 ## Simulation experiments
